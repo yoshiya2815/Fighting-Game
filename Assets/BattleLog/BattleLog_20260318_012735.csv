@@ -1,0 +1,6 @@
+﻿User,MoveID,MoveName,UseCount,HitCount,BlockedCount,WhiffCount,TotalDamage,AvgDamage
+1P(ID:8),801,ゴム掴み,4,4,0,0,217,54.3
+1P(ID:8),802,対空大技,4,4,0,0,504,126.0
+1P(ID:8),12,後退,6,0,0,6,0,0.0
+2P(ID:4),401,溜め攻撃,4,0,0,4,0,0.0
+2P(ID:4),8,ガード,1,0,0,1,0,0.0

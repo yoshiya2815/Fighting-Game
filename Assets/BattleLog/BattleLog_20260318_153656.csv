@@ -1,0 +1,3 @@
+﻿User,MoveID,MoveName,UseCount,HitCount,BlockedCount,WhiffCount,TotalDamage,AvgDamage
+1P(ID:1),12,後退,1,0,0,1,0,0.0
+2P(ID:1),21,スライディング,1,0,0,1,0,0.0
