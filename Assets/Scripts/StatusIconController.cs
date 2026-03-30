@@ -1,35 +1,37 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// アクター（Fighter）の内部ステート（ガード、スーパーアーマー等）を視覚的に表現するViewコントローラー。
+/// 内部の物理演算や状態遷移のロジックからは切り離されており、UIの描画とエフェクト再生にのみ責任を持つ。
+/// </summary>
 public class StatusIconController : MonoBehaviour
 {
-    [Header("アイコン表示用コンポーネント")]
-    public SpriteRenderer iconRenderer;
+    [Header("Icon Settings")]
+    [SerializeField] private SpriteRenderer iconRenderer;
+    [SerializeField] private Sprite shieldSprite;
+    [SerializeField] private Sprite machoSprite;
 
-    [Header("使用する画像（Sprite）")]
-    public Sprite shieldSprite;
-    public Sprite machoSprite;
-
-    // ▼▼▼ 追加：オーラ用のParticle System ▼▼▼
-    [Header("重戦車専用：オーラエフェクト")]
-    public ParticleSystem auraParticle;
+    [Header("Aura Effects")]
+    [SerializeField] private ParticleSystem auraParticle;
 
     private Vector3 baseScale;
 
-    void Start()
+    private void Start()
     {
         if (iconRenderer != null)
         {
             baseScale = iconRenderer.transform.localScale;
         }
 
-        // 開始時はオーラを止めておく
         if (auraParticle != null)
         {
             auraParticle.Stop();
         }
     }
 
-    // ★ ガード（盾）の時はオーラを消す
+    /// <summary>
+    /// ガード状態のアイコンを表示し、オーラエフェクトを無効化する
+    /// </summary>
     public void ShowGuard()
     {
         if (iconRenderer == null || shieldSprite == null) return;
@@ -39,11 +41,12 @@ public class StatusIconController : MonoBehaviour
         iconRenderer.transform.localScale = baseScale;
         iconRenderer.gameObject.SetActive(true);
 
-        // ガードアイコン時はオーラを消す
         if (auraParticle != null) auraParticle.Stop();
     }
 
-    // ★ 改造：SA（マッチョ）時は、アイコンの色変更 ＋ オーラの色変更！
+    /// <summary>
+    /// スーパーアーマー（SA）状態のアイコンを表示し、レベルに応じてスケールと色を動的に変化させる
+    /// </summary>
     public void ShowSA(int saLevel)
     {
         if (iconRenderer == null || machoSprite == null) return;
@@ -51,16 +54,15 @@ public class StatusIconController : MonoBehaviour
         iconRenderer.sprite = machoSprite;
         iconRenderer.gameObject.SetActive(true);
 
-        // --- 以前の処理（アイコンの色とサイズ変更） ---
         Color targetColor = Color.white;
         float targetScale = 1.0f;
 
-        if (saLevel >= 3) // レベル3以上（赤）
+        if (saLevel >= 3)
         {
             targetColor = Color.red;
             targetScale = 1.3f;
         }
-        else if (saLevel == 2) // レベル2（黄）
+        else if (saLevel == 2)
         {
             targetColor = Color.yellow;
             targetScale = 1.15f;
@@ -70,9 +72,9 @@ public class StatusIconController : MonoBehaviour
         iconRenderer.transform.localScale = baseScale * targetScale;
     }
 
-    // ==========================================
-    // ▼▼▼ 追加：ターン経過によるオーラ常時発動の制御 ▼▼▼
-    // ==========================================
+    /// <summary>
+    /// ターン経過やバフによって常時発動するオーラエフェクトの色と再生状態を制御する
+    /// </summary>
     public void UpdateAuraByLevel(int auraLevel)
     {
         if (auraParticle == null) return;
@@ -82,24 +84,22 @@ public class StatusIconController : MonoBehaviour
             if (!auraParticle.isPlaying) auraParticle.Play();
 
             var main = auraParticle.main;
-            if (auraLevel == 3) main.startColor = new Color(1f, 0f, 0f, 0.7f); // 赤
-            else if (auraLevel == 2) main.startColor = new Color(1f, 0.5f, 0f, 0.6f); // オレンジ
-            else if (auraLevel == 1) main.startColor = new Color(1f, 1f, 0f, 0.5f); // 黄色
+            if (auraLevel == 3) main.startColor = new Color(1f, 0f, 0f, 0.7f);
+            else if (auraLevel == 2) main.startColor = new Color(1f, 0.5f, 0f, 0.6f);
+            else if (auraLevel == 1) main.startColor = new Color(1f, 1f, 0f, 0.5f);
         }
         else
         {
-            auraParticle.Stop(); // レベル0なら止める
+            auraParticle.Stop();
         }
     }
 
+    /// <summary>
+    /// ステータスアイコンおよびエフェクトを非表示・停止状態にする
+    /// </summary>
     public void HideIcon()
     {
-        if (iconRenderer != null)
-        {
-            iconRenderer.gameObject.SetActive(false);
-        }
-
-        // アイコン消滅時はオーラも止める
+        if (iconRenderer != null) iconRenderer.gameObject.SetActive(false);
         if (auraParticle != null) auraParticle.Stop();
     }
 }

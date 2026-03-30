@@ -3,57 +3,60 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
 
+/// <summary>
+/// キャラクター選択画面（アウトゲーム）の進行状態とUIを管理するコントローラー。
+/// 1Pと2Pの選択フェーズを制御し、バトルシーンへの非同期遷移を行う。
+/// </summary>
 public class CharaSelectManager : MonoBehaviour
 {
-    private bool isSelectingP2 = false; // 最初は1P選択モード
+    private bool isSelectingP2 = false;
 
-    [Header("UI設定")]
-    public Text statusText;         // 「1P選択中」などを表示するテキスト
-    public GameObject p1ConfirmBtn; // 1P確定ボタン
-    public GameObject p2ConfirmBtn; // 2P確定ボタン
+    [Header("UI References")]
+    public Text statusText;
+    public GameObject p1ConfirmBtn;
+    public GameObject p2ConfirmBtn;
     public GameObject vsPanel;
 
-    void Start()
+    private void Start()
     {
-        // 最初は1P確定ボタンだけ出しておく
         p1ConfirmBtn.SetActive(true);
         p2ConfirmBtn.SetActive(false);
         UpdateStatusText();
     }
 
-    // キャラクターボタン（Fighter_1など）が押された時
+    /// <summary>
+    /// UIボタンからキャラクターIDを受け取り、現在の選択フェーズに応じてGameSettingsへ登録する
+    /// </summary>
     public void SelectCharacter(int id)
     {
         if (!isSelectingP2)
         {
             GameSettings.Instance.selectedPlayerID = id;
-            Debug.Log($"1Pがキャラ {id} を選択中");
+            Debug.Log($"[CharaSelect] 1P Selected: ID {id}");
         }
         else
         {
             GameSettings.Instance.selectedEnemyID = id;
-            Debug.Log($"2Pがキャラ {id} を選択中");
+            Debug.Log($"[CharaSelect] 2P Selected: ID {id}");
         }
         UpdateStatusText();
     }
 
-    // 1Pの「決定ボタン」が押された時
     public void OnConfirmP1()
     {
-        if (GameSettings.Instance.selectedPlayerID == 0) return; // 未選択なら無視
+        if (GameSettings.Instance.selectedPlayerID == 0) return; // 未選択時のガード節
 
-        isSelectingP2 = true; // 2P選択モードへ切り替え
-        p1ConfirmBtn.SetActive(false); // 1Pボタンを隠す
-        p2ConfirmBtn.SetActive(true);  // 2Pボタンを出す
+        isSelectingP2 = true; // 2P選択フェーズへ移行
+        p1ConfirmBtn.SetActive(false);
+        p2ConfirmBtn.SetActive(true);
         UpdateStatusText();
     }
 
-    // 2Pの「決定ボタン」が押された時
     public void OnConfirmP2()
     {
-        if (GameSettings.Instance.selectedEnemyID == 0) return; // 未選択なら無視
+        if (GameSettings.Instance.selectedEnemyID == 0) return;
 
-        Debug.Log("両方の選択完了！バトル開始！");
+        Debug.Log("[CharaSelect] 両プレイヤーの選択が完了しました。バトルシーンへ遷移します。");
         vsPanel.SetActive(true);
 
         StartCoroutine(VsAnimationRoutine());
@@ -69,15 +72,12 @@ public class CharaSelectManager : MonoBehaviour
             statusText.text = $"2P 選択中 (現在: {GameSettings.Instance.selectedEnemyID})";
     }
 
+    /// <summary>
+    /// VS演出の待機時間を挟み、バトルシーンへの非同期ロードを実行する
+    /// </summary>
     private IEnumerator VsAnimationRoutine()
     {
-        // ここでエフェクトを鳴らしたり、アニメーションさせたりする
-        // 例：P1が左からスライド、P2が右からスライドして真ん中で衝突！
-
-        // 3秒待つ
         yield return new WaitForSeconds(3.0f);
-
-        // バトルシーンへGO！
         SceneManager.LoadScene("BattleScene");
     }
 }

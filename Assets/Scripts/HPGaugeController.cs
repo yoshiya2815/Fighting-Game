@@ -1,21 +1,25 @@
 using UnityEngine;
-using UnityEngine.UI; // スライダーを使うために必要
+using UnityEngine.UI;
 
+/// <summary>
+/// バトル中のHPゲージ表示と、ダメージ時の遅延減少アニメーション（赤ゲージ）を制御するUIコントローラー。
+/// 即座に減る現在HPと、遅れて減る赤ゲージを組み合わせることで、プレイヤーに「どれだけのダメージを受けたか」を視覚的に認識させるUXを提供する。
+/// </summary>
 public class HPGaugeController : MonoBehaviour
 {
-    [Header("UI設定")]
-    public Slider mainSlider;      // 今ある手前のHPスライダー（緑）
-    public Slider delayedSlider;   // 後ろに置いた赤スライダー
+    [Header("UI References")]
+    [SerializeField] private Slider mainSlider;      // 即座に減少する現在HPスライダー
+    [SerializeField] private Slider delayedSlider;   // 遅延して減少するダメージ量可視化スライダー
 
-    [Header("演出設定")]
-    public float delayTime = 0.5f;     // ダメージを受けてから赤ゲージが減り始めるまでの待機時間
-
-    // ※注意：スライダーの最大値がHP(1000など)の場合、減る速度も大きくする必要があります
-    public float decreaseSpeed = 1000f; // 1秒間に減るHPの量（HP1000なら、500で2秒かけて減る）
+    [Header("Animation Settings")]
+    [SerializeField] private float delayTime = 0.5f; // ダメージを受けてから赤ゲージが減り始めるまでの待機時間
 
     private float delayTimer = 0f;
 
-    // バトル開始時などに最大HPを設定する
+    /// <summary>
+    /// バトル開始時などに最大HPを設定し、ゲージを満タンに初期化する。
+    /// </summary>
+    /// <param name="maxHP">キャラクターの最大HP</param>
     public void InitHP(float maxHP)
     {
         mainSlider.maxValue = maxHP;
@@ -25,32 +29,29 @@ public class HPGaugeController : MonoBehaviour
         delayedSlider.value = maxHP;
     }
 
-    // ダメージを受けた時に呼ばれる関数
+    /// <summary>
+    /// 被ダメージ時にメインゲージを即座に減らし、遅延ゲージの減少タイマーを起動する。
+    /// </summary>
+    /// <param name="currentHP">減少後の現在HP</param>
     public void UpdateHP(float currentHP)
     {
-        // メインのゲージは即座に現在のHPまで減らす
         mainSlider.value = currentHP;
-
-        // 赤ゲージを減らすためのタイマーをリセット（待機開始）
         delayTimer = delayTime;
     }
 
-    void Update()
+    private void Update()
     {
-        // 赤ゲージがメインゲージより多い（＝ダメージを受けた）場合のみ処理
+        // 赤ゲージがメインゲージより多い（＝ダメージを食らった）状態でのみアニメーション処理を行う
         if (delayedSlider.value > mainSlider.value)
         {
             if (delayTimer > 0)
             {
-                // 待機時間を減らす
                 delayTimer -= Time.deltaTime;
-                //Debug.Log($"【HPゲージ】赤ゲージ待機中... 残り時間: {delayTimer:F2}秒");
             }
             else
             {
-                //Debug.Log("【HPゲージ】待機完了！赤ゲージ減少スタート！！");
-                // 待機が終わったら、赤ゲージをメインゲージの位置まで滑らかに減らす
-                float dynamicSpeed = delayedSlider.maxValue * 0.5f; // 1秒間に最大HPの50%分を減らす
+                // ゲージの最大値に依存せず、常に「1秒間に最大HPの50%分」の一定割合で滑らかに減らす動的スピード計算
+                float dynamicSpeed = delayedSlider.maxValue * 0.5f;
                 delayedSlider.value = Mathf.MoveTowards(delayedSlider.value, mainSlider.value, dynamicSpeed * Time.deltaTime);
             }
         }

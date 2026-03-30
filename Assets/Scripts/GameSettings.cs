@@ -1,23 +1,27 @@
 using UnityEngine;
 
+/// <summary>
+/// シーン遷移を跨いでゲーム設定（選択されたキャラクターIDなど）を保持するデータコンテナ。
+/// DontDestroyOnLoadを用いたシングルトンパターンにより、アウトゲームとインゲーム間でデータの受け渡しを行う。
+/// </summary>
 public class GameSettings : MonoBehaviour
 {
-    public static GameSettings Instance; // どこからでもアクセスできるようにする
+    public static GameSettings Instance { get; private set; }
 
-    public int selectedPlayerID; // 1Pが選んだキャラID
-    public int selectedEnemyID;  // 2P（またはCPU）が選んだキャラID
+    [Header("Battle Configurations")]
+    public int selectedPlayerID;
+    public int selectedEnemyID;
 
-    void Awake()
+    private void Awake()
     {
-        // シーンが変わっても自分を消さない魔法の呪文
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); // シーン遷移時に破棄されないよう保護
         }
         else
         {
-            Destroy(gameObject);
+            Destroy(gameObject); // 重複するインスタンスの破棄
         }
     }
 }

@@ -1,35 +1,42 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
+/// <summary>
+/// 敵AIの行動パターン定義を保持するデータモデル。
+/// 距離条件や特定のキャラクターIDに基づく専用パターンのフィルタリング条件を定義し、
+/// 状況に応じた最適な技リスト（コンボ）をAIシステムへ提供する。
+/// </summary>
 public class EnemyPatternData
 {
     public int patternId;
     public string patternName;
     public int usableCharID;
-    public List<string> moveIds = new List<string>(); // 技IDのリスト
+    public List<string> moveIds = new List<string>();
 
-    // ==========================================
-    // ★追加：このパターンを発動できる距離の範囲
-    // ==========================================
-    public float minDistance; // 最低この距離以上離れていないと使わない（密着=0）
-    public float maxDistance; // この距離より遠いと使わない（遠距離=100など）
+    [Header("Distance Constraints")]
+    public float minDistance; // AIがこのパターンを評価する最小距離
+    public float maxDistance; // AIがこのパターンを評価する最大距離
 
+    /// <summary>
+    /// CSVの行データを解析し、AIパターンデータとしてマッピングする。
+    /// 空白や無効なデータを安全にスキップする。
+    /// </summary>
     public void SetData(string[] row)
     {
         int.TryParse(row[0], out patternId);
         patternName = row.Length > 1 ? row[1] : "";
 
-        // ★追加・3列目：使用可能キャラID（標準機能の int.TryParse を使います！）
         if (row.Length > 2)
         {
             int.TryParse(row[2], out usableCharID);
         }
 
-        // 技1〜技10 は CSVの [2]列目 から [11]列目 に入っている
+        // 技1〜技10のIDリスト化（空要素の除外と空白のトリミング）
         for (int i = 3; i < 13; i++)
         {
             if (row.Length > i && !string.IsNullOrWhiteSpace(row[i]))
             {
-                moveIds.Add(row[i].Trim()); // 余計な空白を消してリストに追加！
+                moveIds.Add(row[i].Trim());
             }
         }
 

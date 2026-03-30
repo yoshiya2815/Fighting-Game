@@ -1,36 +1,40 @@
 using UnityEngine;
 
+/// <summary>
+/// バトル開始時のアクター（Fighter）の動的生成と初期配置を担当するスポーナー。
+/// シーン上の固定オブジェクトへの依存を減らし、将来的なキャラクター切り替えや
+/// マルチプレイ拡張に対応しやすい疎結合な初期化フローを提供する。
+/// </summary>
 public class BattleManager : MonoBehaviour
 {
-    [Header("呼び出すプレハブ")]
-    public GameObject playerPrefab; // 1Pとして出すキャラ（例：スピードキャラ）
-    public GameObject enemyPrefab;  // 2Pとして出すキャラ（例：重戦車）
+    [Header("Prefabs")]
+    public GameObject playerPrefab;
+    public GameObject enemyPrefab;
 
-    [Header("出現位置（スポーンポイント）")]
+    [Header("Spawn Points")]
     public Transform playerSpawnPoint;
     public Transform enemySpawnPoint;
 
-    void Start()
+    private void Start()
     {
-        // ゲームが始まった瞬間にキャラクターを生成する
         SpawnCharacters();
     }
 
-    void SpawnCharacters()
+    /// <summary>
+    /// プレハブのインスタンス化とTransformの初期設定を行う
+    /// </summary>
+    private void SpawnCharacters()
     {
-        // 1Pの生成（Instantiate）
         if (playerPrefab != null && playerSpawnPoint != null)
         {
-            // 指定したプレハブを、指定した位置と角度で出現させる
             Instantiate(playerPrefab, playerSpawnPoint.position, playerSpawnPoint.rotation);
         }
 
-        // 2Pの生成
         if (enemyPrefab != null && enemySpawnPoint != null)
         {
             Instantiate(enemyPrefab, enemySpawnPoint.position, enemySpawnPoint.rotation);
         }
 
-        Debug.Log("キャラクターの生成が完了しました！");
+        Debug.Log("[BattleManager] キャラクターの動的生成が完了しました。");
     }
 }
